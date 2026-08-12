@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOEST SLOT 1.1 - Linz Heavy Metal Edition</title>
+    <style>
+        :root {
+            --bg-color: #0b0f14;
+            --panel-bg: #161d26;
+            --accent-orange: #ff6b00;
+            --steel-blue: #0072ce;
+            --red-worker: #e74c3c;
+            --blue-worker: #3498db;
+            --green-worker: #2ecc71;
+            --yellow-worker: #f1c40f;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #ffffff;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            user-select: none;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 12px rgba(255, 107, 0, 0.6);
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .game-container {
+            background: var(--panel-bg);
+            border: 2px solid #2c3e50;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+        }
+
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 15px;
+            background: #0d1218;
+            padding: 12px 18px;
+            border-radius: 10px;
+            box-sizing: border-box;
+            border: 1px solid #1f2d3d;
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--accent-orange);
+        }
+
+        .grid-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #080b0e;
+            border-radius: 10px;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 2px solid #1f2d3d;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 6px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cell {
+            background: #1a232e;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            position: relative;
+            box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
+            transition: all 0.2s ease;
+        }
+
+        /* Arbeiter Styling & Hervorhebung */
+        .worker {
+            border-radius: 50%;
+            z-index: 5;
+            transform: scale(1.05);
+        }
+
+        .worker-red { border: 3px solid var(--red-worker); background: rgba(231, 76, 60, 0.4); box-shadow: 0 0 10px var(--red-worker); }
+        .worker-blue { border: 3px solid var(--blue-worker); background: rgba(52, 152, 219, 0.4); box-shadow: 0 0 10px var(--blue-worker); }
+        .worker-green { border: 3px solid var(--green-worker); background: rgba(46, 204, 113, 0.4); box-shadow: 0 0 10px var(--green-worker); }
+        .worker-yellow { border: 3px solid var(--yellow-worker); background: rgba(241, 196, 15, 0.4); box-shadow: 0 0 10px var(--yellow-worker); }
+
+        .controls {
+            margin-top: 15px;
+            width: 100%;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff6b00 0%, #d35400 100%);
+            border: none;
+            color: white;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #ff7b1a 0%, #e67e22 100%);
+        }
+
+        button:disabled {
+            background: #34495e;
+            box-shadow: none;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .btn-spin { flex: 2; }
+        .btn-buy { 
+            flex: 1; 
+            background: linear-gradient(135deg, #8e44ad 0%, #2980b9 100%);
+            box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
+        }
+
+        .log {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: #2ecc71;
+            height: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Modal für Betriebsrat Menü */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #161d26;
+            border: 2px solid var(--accent-orange);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+        }
+
+        .modal-card h2 {
+            color: var(--accent-orange);
+            margin-top: 0;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .buy-option {
+            background: #1f2d3d;
+            border: 1px solid #34495e;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .buy-option:hover {
+            border-color: var(--accent-orange);
+            background: #25374a;
+        }
+
+        .buy-title { font-weight: bold; font-size: 0.9rem; }
+        .buy-desc { font-size: 0.75rem; color: #95a5a6; }
+        .buy-price { color: #f1c40f; font-weight: bold; font-size: 1.1rem; }
+
+        .close-btn {
+            width: 100%;
+            margin-top: 10px;
+            background: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>VOEST SLOT <span style="color:var(--accent-orange)">1.1</span></h1>
+    <div class="subtitle">CollectR Mechanik • RTP: 96.0%</div>
+
+    <div class="game-container">
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <div class="stat-box">
+                <span class="stat-label">Guthaben</span>
+                <span class="stat-value" id="credit">1.000 €</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Multiplikator</span>
+                <span class="stat-value" id="multiplier">x1</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Gewinn</span>
+                <span class="stat-value" id="win">0 €</span>
+            </div>
+        </div>
+
+        <!-- Spielfeld -->
+        <div class="grid-container">
+            <div class="grid" id="grid"></div>
+        </div>
+
+        <div class="log" id="log">Bereit für die Schicht!</div>
+
+        <!-- Steuerung -->
+        <div class="controls">
+            <button class="btn-spin" id="spinBtn" onclick="startShift()">Schicht Starten (10 €)</button>
+            <button class="btn-buy" id="buyBtn" onclick="openMenu()">Betriebsrat ⚡</button>
+        </div>
+    </div>
+
+    <!-- Modal Popup -->
+    <div class="modal-overlay" id="buyModal">
+        <div class="modal-card">
+            <h2>Betriebsrat Menü</h2>
+            <p style="font-size:0.8rem; color:#aaa; text-align:center;">Vorteile für die Schicht freischalten:</p>
+
+            <div class="buy-option" onclick="buyFeature('NACHTSCHICHT', 100)">
+                <div>
+                    <div class="buy-title">🌙 Nachtschicht (10 Freispiele)</div>
+                    <div class="buy-desc">Ergibt 10 automatische Runden</div>
+                </div>
+                <div class="buy-price">100 €</div>
+            </div>
+
+            <div class="buy-option" onclick="buyFeature('MEISTER', 50)">
+                <div>
+                    <div class="buy-title">👷‍♀️ Meister-Bonus</div>
+                    <div class="buy-desc">Startet direkt mit x3 Multiplikator</div>
+                </div>
+                <div class="buy-price">50 €</div>
+            </div>
+
+            <div class="buy-option" onclick="buyFeature('DYNAMIT', 30)">
+                <div>
+                    <div class="buy-title">🧨 Sprengmeister-Spezial</div>
+                    <div class="buy-desc">Platziert 2x Dynamit auf dem Feld</div>
+                </div>
+                <div class="buy-price">30 €</div>
+            </div>
+
+            <button class="close-btn" onclick="closeMenu()">Schließen</button>
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 6;
+        let credits = 1000;
+        let currentWin = 0;
+        let globalMultiplier = 1;
+        let isCollecting = false;
+        let freeSpinsLeft = 0;
+
+        // Fest definierte Voest-Arbeiter
+        const WORKERS = [
+            { isWorker: true, type: 'W_RED', icon: '👨‍🏭', color: 'red', collects: 'R_RED' },    
+            { isWorker: true, type: 'W_BLUE', icon: '👷‍♂️', color: 'blue', collects: 'R_BLUE' },  
+            { isWorker: true, type: 'W_GREEN', icon: '🛠️', color: 'green', collects: 'R_GREEN' },
+            { isWorker: true, type: 'W_YELLOW', icon: '👷‍♀️', color: 'yellow', collects: 'R_YELLOW' } 
+        ];
+
+        const RESOURCES = {
+            'R_RED': { icon: '🔥', value: 2.0 },    
+            'R_BLUE': { icon: '⚙️', value: 1.5 },   
+            'R_GREEN': { icon: '🧰', value: 1.0 },  
+            'R_YELLOW': { icon: '🪖', value: 0.8 }  
+        };
+
+        const SPECIALS = {
+            'BOMB': { icon: '🧨', value: 0 },    
+            'WILD': { icon: '🍺', value: 3.0 },   
+            'UPGRADE': { icon: '⬆️', value: 0 }  
+        };
+
+        let gridState = [];
+
+        function initGrid() {
+            gridState = new Array(GRID_SIZE * GRID_SIZE).fill(null);
+
+            // 1. Arbeiter auf 4 zufälligen Positionen verankern
+            let positions = [];
+            while(positions.length < 4) {
+                let r = Math.floor(Math.random() * 36);
+                if(!positions.includes(r)) positions.push(r);
+            }
+
+            positions.forEach((pos, i) => {
+                gridState[pos] = { ...WORKERS[i] };
+            });
+
+            // 2. Alle anderen Felder mit Rohstoffen befüllen
+            for (let i = 0; i < 36; i++) {
+                if (!gridState[i]) {
+                    gridState[i] = getRandomResource();
+                }
+            }
+
+            renderGrid();
+        }
+
+        function getRandomResource() {
+            const rand = Math.random();
+
+            if (rand < 0.04) return { isWorker: false, type: 'BOMB', ...SPECIALS['BOMB'] };
+            if (rand < 0.08) return { isWorker: false, type: 'UPGRADE', ...SPECIALS['UPGRADE'] };
+            if (rand < 0.14) return { isWorker: false, type: 'WILD', ...SPECIALS['WILD'] };
+
+            const keys = Object.keys(RESOURCES);
+            const key = keys[Math.floor(Math.random() * keys.length)];
+            return { isWorker: false, type: key, ...RESOURCES[key] };
+        }
+
+        function renderGrid() {
+            const gridEl = document.getElementById('grid');
+            gridEl.innerHTML = '';
+
+            gridState.forEach((cell, idx) => {
+                const cellEl = document.createElement('div');
+                cellEl.className = 'cell';
+
+                if (cell && cell.isWorker) {
+                    cellEl.classList.add('worker', `worker-${cell.color}`);
+                }
+
+                cellEl.innerText = cell ? cell.icon : '';
+                gridEl.appendChild(cellEl);
+            });
+        }
+
+        async function startShift() {
+            if (isCollecting) return;
+
+            if (freeSpinsLeft > 0) {
+                freeSpinsLeft--;
+                document.getElementById('log').innerText = `🌙 Freispiele verbleibend: ${freeSpinsLeft}`;
+            } else {
+                if (credits < 10) {
+                    alert("Guthaben zu gering!");
+                    return;
+                }
+                credits -= 10;
+                globalMultiplier = 1;
+            }
+
+            currentWin = 0;
+            updateStats();
+            setButtons(false);
+
+            initGrid();
+            isCollecting = true;
+
+            await collectLoop();
+
+            credits += currentWin;
+            updateStats();
+            isCollecting = false;
+
+            if (freeSpinsLeft > 0) {
+                setTimeout(startShift, 600);
+            } else {
+                setButtons(true);
+                document.getElementById('log').innerText = currentWin > 0 
+                    ? `Schicht Ende! Gewinn: ${currentWin.toFixed(2)} €` 
+                    : "Keine Rohstoffe erreichbar.";
+            }
+        }
+
+        async function collectLoop() {
+            let moved = true;
+            let maxSteps = 50; // Schutz gegen Endlosschleifen
+
+            while (moved && maxSteps > 0) {
+                moved = false;
+                maxSteps--;
+
+                for (let i = 0; i < 36; i++) {
+                    const cell = gridState[i];
+
+                    if (cell && cell.isWorker) {
+                        const neighbors = getNeighbors(i);
+
+                        for (let nIdx of neighbors) {
+                            const target = gridState[nIdx];
+                            if (!target || target.isWorker) continue;
+
+                            const canCollect = target.type === cell.collects || 
+                                               target.type === 'WILD' || 
+                                               target.type === 'BOMB' || 
+                                               target.type === 'UPGRADE';
+
+                            if (canCollect) {
+                                moved = true;
+
+                                // Effekt ausführen
+                                if (target.type === 'BOMB') {
+                                    document.getElementById('log').innerText = "🧨 DYNAMIT EXPLOSION!";
+                                    explode(nIdx);
+                                } else if (target.type === 'UPGRADE') {
+                                    globalMultiplier++;
+                                    document.getElementById('log').innerText = "⬆️ Multiplikator erhöht!";
+                                } else {
+                                    currentWin += (target.value * globalMultiplier);
+                                }
+
+                                // Arbeiter-Bewegung
+                                gridState[nIdx] = { ...gridState[i] };
+                                gridState[i] = { isWorker: false, icon: '', value: 0 };
+
+                                updateStats();
+                                renderGrid();
+                                await delay(180);
+
+                                applyGravity();
+                                renderGrid();
+                                await delay(150);
+
+                                break;
+                            }
+                        }
+                    }
+                    if (moved) break;
+                }
+            }
+        }
+
+        function explode(center) {
+            const neighbors = getNeighbors(center);
+            neighbors.push(center);
+
+            neighbors.forEach(idx => {
+                if (gridState[idx] && !gridState[idx].isWorker) {
+                    gridState[idx] = { isWorker: false, icon: '', value: 0 };
+                }
+            });
+        }
+
+        function applyGravity() {
+            for (let col = 0; col < GRID_SIZE; col++) {
+                for (let row = GRID_SIZE - 1; row >= 0; row--) {
+                    let idx = row * GRID_SIZE + col;
+
+                    if (!gridState[idx] || gridState[idx].icon === '') {
+                        for (let above = row - 1; above >= 0; above--) {
+                            let aboveIdx = above * GRID_SIZE + col;
+                            if (gridState[aboveIdx] && gridState[aboveIdx].icon !== '') {
+                                gridState[idx] = { ...gridState[aboveIdx] };
+                                gridState[aboveIdx] = { isWorker: false, icon: '', value: 0 };
+                                break;
+                            }
+                        }
+
+                        if (!gridState[idx] || gridState[idx].icon === '') {
+                            gridState[idx] = getRandomResource();
+                        }
+                    }
+                }
+            }
+        }
+
+        function getNeighbors(idx) {
+            const row = Math.floor(idx / GRID_SIZE);
+            const col = idx % GRID_SIZE;
+            const res = [];
+
+            if (row > 0) res.push(idx - GRID_SIZE);
+            if (row < GRID_SIZE - 1) res.push(idx + GRID_SIZE);
+            if (col > 0) res.push(idx - 1);
+            if (col < GRID_SIZE - 1) res.push(idx + 1);
+
+            return res;
+        }
+
+        // Betriebsrat Menü Öffnen / Schließen
+        function openMenu() {
+            document.getElementById('buyModal').classList.add('open');
+        }
+
+        function closeMenu() {
+            document.getElementById('buyModal').classList.remove('open');
+        }
+
+        function buyFeature(type, price) {
+            if (credits < price) {
+                alert("Nicht genug Guthaben!");
+                return;
+            }
+
+            credits -= price;
+            closeMenu();
+
+            if (type === 'NACHTSCHICHT') {
+                freeSpinsLeft = 10;
+                document.getElementById('log').innerText = "🌙 10 Freispiele gekauft!";
+                startShift();
+            } else if (type === 'MEISTER') {
+                globalMultiplier = 3;
+                document.getElementById('log').innerText = "👷‍♀️ x3 Multiplikator aktiv!";
+                startShift();
+            } else if (type === 'DYNAMIT') {
+                initGrid();
+                gridState[0] = { isWorker: false, type: 'BOMB', ...SPECIALS['BOMB'] };
+                gridState[1] = { isWorker: false, type: 'BOMB', ...SPECIALS['BOMB'] };
+                renderGrid();
+                document.getElementById('log').innerText = "🧨 Dynamit platziert!";
+                startShift();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('credit').innerText = `${credits.toFixed(0)} €`;
+            document.getElementById('win').innerText = `${currentWin.toFixed(2)} €`;
+            document.getElementById('multiplier').innerText = `x${globalMultiplier}`;
+        }
+
+        function setButtons(enabled) {
+            document.getElementById('spinBtn').disabled = !enabled;
+            document.getElementById('buyBtn').disabled = !enabled;
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Startaufstellung laden
+        initGrid();
+    </script>
+</body>
+  </html>
